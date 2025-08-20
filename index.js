@@ -50,6 +50,20 @@ const dividerMap = {
 }
 const dividers = ['A', 'B', 'C', 'D', 'E', 'F', 'G', 'H', 'I', 'J'];
 
+const counterMap = ['a', 'b', 'c', 'd', 'e', 'f', 'g', 'h', 'i', 'j'];
+const counterKeys = {
+    'a': 0,
+    'b': 1,
+    'c': 2,
+    'd': 3,
+    'e': 4,
+    'f': 5,
+    'g': 6,
+    'h': 7,
+    'i': 8,
+    'j': 9
+};
+
 const generateTripleArray = () => {
     const result = [];
     for (let i = 1; i <= MAX_NUMBER; i++) {
@@ -68,13 +82,22 @@ const generateRandomArray = (arrayLength, maxNumber, minNumber) => {
     return array;
 };
 const naiveSerializationResult = (array) => {
-    return array.join(',');
+    return array.sort((a, b) => a - b).join(',');
 };
 
 const numberToDivider = (number) => {
     const digits = String(number).split('');
     digits[digits.length - 1] = digitsMap[digits[digits.length - 1]];
     return digits.join('');
+}
+
+const numberToCounter = (number) => {
+    const digits = String(number).split('');
+    return digits.map((digit) => counterMap[digit]).join('');
+}
+const numberFromCounter = (number) => {
+    const digits = String(number).split('');
+    return digits.map((digit) => counterKeys[digit]).join('');
 }
 
 const toDeltas = (array) => {
@@ -94,70 +117,77 @@ const fromDeltas = (deltas) => {
 }
 
 const compressString = (string) => {
-    let compressedString = '';
+    let compressedString = '_';
     let currentChar = string[0];
     let currentCharCount = 1;
     for (let i = 1; i < string.length; i++) {
         if (string[i] === currentChar) {
             currentCharCount++;
         } else {
-            if (currentCharCount > 3) {
-                compressedString += currentChar + '*' + currentCharCount + '#';
+            if (currentCharCount > 1) {
+                compressedString += currentChar + numberToCounter(currentCharCount);
             } else {
-                for (let j = 0; j < currentCharCount; j++) {
-                    compressedString += currentChar;
-                }
+                compressedString += currentChar.repeat(currentCharCount);
             }
             currentChar = string[i];
             currentCharCount = 1;
         }
     }
 
-    if (currentCharCount > 3) {
-        compressedString += currentChar + '*' + currentCharCount + '#';
+    if (currentCharCount > 1) {
+        compressedString += currentChar + numberToCounter(currentCharCount);
     } else {
         for (let j = 0; j < currentCharCount; j++) {
             compressedString += currentChar;
         }
     }
     
-    return compressedString;
+    return compressedString.substring(1);
 };
 
 const decompressString = (string) => {
-    let result = '';
+    let result = '_';
     let currentChar = '';
     let currentCharCount = '';
-    let countStarted = false;
+
     for (let i = 0; i < string.length; i++) {
-        if (string[i] === '*') {
-            countStarted = true;
-        } else if (string[i] === '#') {
-            result += currentChar.repeat(Number(currentCharCount) - 1);
-            currentChar = '';
-            currentCharCount = '';
-            countStarted = false;
-        } else if (countStarted) {
+        if (counterMap.includes(string[i])) {
             currentCharCount += string[i];
+        } else if (currentCharCount.length) {
+            result += currentChar.repeat(Number(numberFromCounter(currentCharCount)) - 1);
+            currentChar = string[i];
+            result += string[i];
+            currentCharCount = '';
         } else {
             currentChar = string[i];
             result += string[i];
         }
     }
-    return result;
+
+    if (currentCharCount.length) {
+        result += currentChar.repeat(Number(numberFromCounter(currentCharCount)) - 1);
+    }
+    return result.substring(1);
 }
 
 const testFunction = (testArray) => {
     const naiveResult = naiveSerializationResult(testArray);
     const result = serialization(testArray);
     const fromResult = deserialization(result);
+    const retest = naiveSerializationResult(fromResult) === naiveResult;
     
     console.log('------------------------------')
+    if (!retest){
+        console.log('Failed');
+    } else {
+        console.log('Passed');
+    }
     console.log(naiveResult);
+    console.log('====>')
     console.log(result);
-    console.log((naiveResult.length / result.length).toFixed(4));
+    console.log('Compressed by: ' + (naiveResult.length / result.length).toFixed(4));
     
-    return (naiveResult.length / result.length).toFixed(4);
+    return (naiveResult.length / result.length).toFixed(2);
 };
 const runTests = () => {
     const testResults = [];
@@ -166,8 +196,9 @@ const runTests = () => {
     })
     const average = (testResults.reduce((a, b) => Number(a) + Number(b)) / testResults.length).toFixed(2);
     const errorsCount = testResults.filter((result) => Number(result) < 2).length;
+    console.log('***************************')
     console.log(`Average: ${average}`);
-    console.log(`Error percent: ${(errorsCount/testResults.length * 100).toFixed(4)}%`);
+    console.log(`Error percent: ${(errorsCount/testResults.length * 100).toFixed(2)}%`);
 };
 
 const testCases = [
