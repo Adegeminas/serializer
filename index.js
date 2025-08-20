@@ -1,3 +1,28 @@
+const serialization = (array) => {
+    const sortedArray = array.sort((a, b) => a - b);
+    const deltedArray = toDeltas(sortedArray);
+    const dividedArray = deltedArray.map((number) => numberToDivider(number));
+    return compressString(dividedArray.join(''));
+};
+
+const deserialization = (serialized) => {
+    const decompressed = decompressString(serialized);
+    let deltedArray = [];
+    let tempNumberStr = '';
+    for (let i = 0; i < decompressed.length; i++) {
+        if (dividers.includes(decompressed[i])) {
+            deltedArray.push(Number(tempNumberStr + dividerMap[decompressed[i]]));
+            tempNumberStr = '';
+        } else {
+            tempNumberStr += decompressed[i];
+        }
+    }  
+    
+    return fromDeltas(deltedArray);
+};
+
+//////////////////////////////////////////////////////////////////////
+
 const MAX_NUMBER = 300;
 const digitsMap = {
     0: 'A',
@@ -121,29 +146,6 @@ const decompressString = (string) => {
     }
     return result;
 }
-
-const serialization = (array) => {
-    const sortedArray = array.sort((a, b) => a - b);
-    const deltedArray = toDeltas(sortedArray);
-    const dividedArray = deltedArray.map((number) => numberToDivider(number));
-    return compressString(dividedArray.join(''));
-};
-
-const deserialization = (serialized) => {
-    const decompressed = decompressString(serialized);
-    let deltedArray = [];
-    let tempNumberStr = '';
-    for (let i = 0; i < decompressed.length; i++) {
-        if (dividers.includes(decompressed[i])) {
-            deltedArray.push(Number(tempNumberStr + dividerMap[decompressed[i]]));
-            tempNumberStr = '';
-        } else {
-            tempNumberStr += decompressed[i];
-        }
-    }  
-    
-    return fromDeltas(deltedArray);
-};
 
 const testFunction = (testArray) => {
     const naiveResult = naiveSerializationResult(testArray);
