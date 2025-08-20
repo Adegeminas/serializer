@@ -10,8 +10,8 @@ const deserialization = (serialized) => {
     let deltedArray = [];
     let tempNumberStr = '';
     for (let i = 0; i < decompressed.length; i++) {
-        if (dividers.includes(decompressed[i])) {
-            deltedArray.push(Number(tempNumberStr + dividerMap[decompressed[i]]));
+        if (dividerMap.includes(decompressed[i])) {
+            deltedArray.push(Number(tempNumberStr + dividerKeys[decompressed[i]]));
             tempNumberStr = '';
         } else {
             tempNumberStr += decompressed[i];
@@ -24,19 +24,9 @@ const deserialization = (serialized) => {
 //////////////////////////////////////////////////////////////////////
 
 const MAX_NUMBER = 300;
-const digitsMap = {
-    0: 'A',
-    1: 'B',
-    2: 'C',
-    3: 'D',
-    4: 'E',
-    5: 'F',
-    6: 'G',
-    7: 'H',
-    8: 'I',
-    9: 'J',
-}
-const dividerMap = {
+
+const dividerMap = ['A', 'B', 'C', 'D', 'E', 'F', 'G', 'H', 'I', 'J'];
+const dividerKeys = {
     'A': 0,
     'B': 1,
     'C': 2,
@@ -48,7 +38,6 @@ const dividerMap = {
     'I': 8,
     'J': 9,
 }
-const dividers = ['A', 'B', 'C', 'D', 'E', 'F', 'G', 'H', 'I', 'J'];
 
 const counterMap = ['a', 'b', 'c', 'd', 'e', 'f', 'g', 'h', 'i', 'j'];
 const counterKeys = {
@@ -87,7 +76,7 @@ const naiveSerializationResult = (array) => {
 
 const numberToDivider = (number) => {
     const digits = String(number).split('');
-    digits[digits.length - 1] = digitsMap[digits[digits.length - 1]];
+    digits[digits.length - 1] = dividerMap[digits[digits.length - 1]];
     return digits.join('');
 }
 
